@@ -12,7 +12,9 @@ import {
   Settings, 
   Calendar,
   Sparkles,
-  Zap
+  Zap,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -20,7 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { NeonButton } from '@/components/web3/neon-button'
 import { CyberCard } from '@/components/web3/cyber-card'
-import { urlService, type CreateURLRequest } from '@/lib/api'
+import { useCreateURL } from '@/hooks/use-url-api'
 import { copyToClipboard, formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -43,10 +45,10 @@ interface ShortenedURL {
 }
 
 export function ShortenForm() {
-  const [shortenedUrl, setShortenedUrl] = useState<ShortenedURL | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const createURLMutation = useCreateURL()
 
   const {
     register,
@@ -58,31 +60,28 @@ export function ShortenForm() {
   })
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true)
-    try {
-      const payload: CreateURLRequest = {
-        url: data.url,
-        ...(data.customAlias && { custom_alias: data.customAlias }),
-        ...(data.expiresAt && { expires_at: new Date(data.expiresAt).toISOString() })
-      }
-
-      const response = await urlService.createURL(payload)
-      setShortenedUrl(response.data)
-      reset()
-    } catch (error) {
-      console.error('Failed to shorten URL:', error)
-    } finally {
-      setIsLoading(false)
+    const payload = {
+      url: data.url,
+      ...(data.customAlias && { custom_alias: data.customAlias }),
+      ...(data.expiresAt && { expires_at: new Date(data.expiresAt).toISOString() })
     }
+
+    createURLMutation.mutate(payload, {
+      onSuccess: () => {
+        reset()
+      }
+    })
   }
 
   const handleCopy = async () => {
-    if (shortenedUrl) {
-      await copyToClipboard(shortenedUrl.short_url)
+    if (createURLMutation.data?.data?.short_url) {
+      await copyToClipboard(createURLMutation.data.data.short_url)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  const shortenedUrl = createURLMutation.data?.data
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -114,7 +113,7 @@ export function ShortenForm() {
                   {...register('url')}
                   placeholder="https://example.com/your-very-long-url"
                   className="pl-11 h-14 text-lg cyber-border"
-                  disabled={isLoading}
+                  disabled={createURLMutation.isPending}
                 />
               </div>
               {errors.url && (
@@ -188,12 +187,12 @@ export function ShortenForm() {
             >
               <NeonButton
                 type="submit"
-                disabled={isLoading}
+                disabled={createURLMutation.isPending}
                 neonColor="cyan"
                 className="w-full h-14 text-lg font-semibold"
-                pulse={isLoading}
+                pulse={createURLMutation.isPending}
               >
-                {isLoading ? (
+                {createURLMutation.isPending ? (
                   <div className="flex items-center space-x-3">
                     <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     <span>Generating...</span>
@@ -207,6 +206,25 @@ export function ShortenForm() {
               </NeonButton>
             </motion.div>
           </form>
+
+          {/* Error Display */}
+          {createURLMutation.error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-lg border border-red-500/30 bg-red-500/10"
+            >
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="w-5 h-5 text-red-400" />
+                <div>
+                  <p className="text-red-400 font-medium">Failed to shorten URL</p>
+                  <p className="text-sm text-red-300/80">
+                    {(createURLMutation.error as any)?.response?.data?.message || createURLMutation.error?.message || 'An unexpected error occurred'}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </CardContent>
       </CyberCard>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   BarChart3, 
@@ -13,7 +13,9 @@ import {
   Tablet,
   MapPin,
   Calendar,
-  Filter
+  Filter,
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 
 import { MainLayout } from '@/components/layout/main-layout'
@@ -22,52 +24,24 @@ import { NeonButton } from '@/components/web3/neon-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ClickChart, TopReferrers, HourlyActivity } from '@/components/analytics/click-chart'
-import { urlService, type URLResponse, type ClickData } from '@/lib/api'
+import { useUserURLs, useURLAnalytics } from '@/hooks/use-url-api'
 import { formatNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
 export default function AnalyticsPage() {
-  const [urls, setUrls] = useState<URLResponse[]>([])
   const [selectedUrl, setSelectedUrl] = useState<string>('')
-  const [analytics, setAnalytics] = useState<ClickData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
-  useEffect(() => {
-    fetchUrls()
-  }, [])
+  // React Query hooks
+  const { data: urls = [], isLoading: urlsLoading, error: urlsError } = useUserURLs(50, 0)
+  const { 
+    data: analytics = [], 
+    isLoading: analyticsLoading, 
+    error: analyticsError 
+  } = useURLAnalytics(selectedUrl, 100, 0)
 
-  useEffect(() => {
-    if (selectedUrl) {
-      fetchAnalytics(selectedUrl)
-    }
-  }, [selectedUrl])
-
-  const fetchUrls = async () => {
-    try {
-      const response = await urlService.getUserURLs(50, 0)
-      const urlData = response.data || []
-      setUrls(urlData)
-      if (urlData.length > 0) {
-        setSelectedUrl(urlData[0].id)
-      }
-    } catch (error) {
-      console.error('Failed to fetch URLs:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchAnalytics = async (urlId: string) => {
-    setAnalyticsLoading(true)
-    try {
-      const response = await urlService.getAnalytics(urlId, 100, 0)
-      setAnalytics(response.data || [])
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error)
-    } finally {
-      setAnalyticsLoading(false)
-    }
+  // Set initial selected URL when URLs load
+  if (!selectedUrl && urls.length > 0) {
+    setSelectedUrl(urls[0].id)
   }
 
   const selectedUrlData = urls.find(url => url.id === selectedUrl)
@@ -96,14 +70,39 @@ export default function AnalyticsPage() {
     return clickDate.toDateString() === today.toDateString()
   }).length
 
-  if (loading) {
+  if (urlsLoading) {
     return (
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-neon-cyan border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-neon-cyan" />
             <p className="text-neon-cyan font-mono">Loading analytics...</p>
           </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (urlsError) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <CyberCard className="max-w-md">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
+              <h3 className="text-xl font-semibold text-red-400 mb-2">Failed to Load Analytics</h3>
+              <p className="text-muted-foreground font-mono mb-4">
+                {(urlsError as any)?.response?.data?.message || urlsError?.message || 'An unexpected error occurred'}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="border-red-400 text-red-400 hover:bg-red-400/10"
+              >
+                Retry
+              </Button>
+            </CardContent>
+          </CyberCard>
         </div>
       </MainLayout>
     )
@@ -230,8 +229,21 @@ export default function AnalyticsPage() {
 
           {analyticsLoading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="w-12 h-12 border-4 border-neon-cyan border-t-transparent rounded-full animate-spin" />
+              <div className="text-center">
+                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-neon-cyan" />
+                <p className="text-neon-cyan font-mono">Loading analytics data...</p>
+              </div>
             </div>
+          ) : analyticsError ? (
+            <CyberCard>
+              <CardContent className="text-center py-12">
+                <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-red-400 mb-2">Failed to Load Analytics</h3>
+                <p className="text-muted-foreground font-mono">
+                  {(analyticsError as any)?.response?.data?.message || analyticsError?.message || 'Unable to fetch analytics data'}
+                </p>
+              </CardContent>
+            </CyberCard>
           ) : analytics.length > 0 ? (
             <>
               {/* Charts Row */}

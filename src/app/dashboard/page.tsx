@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   BarChart3, 
@@ -14,7 +14,9 @@ import {
   Plus,
   TrendingUp,
   Clock,
-  Globe
+  Globe,
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 
 import { MainLayout } from '@/components/layout/main-layout'
@@ -23,30 +25,17 @@ import { NeonButton } from '@/components/web3/neon-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { urlService, type URLResponse } from '@/lib/api'
+import { useUserURLs, useDeleteURL } from '@/hooks/use-url-api'
 import { formatDate, formatNumber, copyToClipboard } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
 export default function DashboardPage() {
-  const [urls, setUrls] = useState<URLResponse[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchUrls()
-  }, [])
-
-  const fetchUrls = async () => {
-    try {
-      const response = await urlService.getUserURLs(50, 0)
-      setUrls(response.data || [])
-    } catch (error) {
-      console.error('Failed to fetch URLs:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // React Query hooks
+  const { data: urls = [], isLoading, error } = useUserURLs(50, 0)
+  const deleteURLMutation = useDeleteURL()
 
   const handleCopy = async (url: string, id: string) => {
     await copyToClipboard(url)
@@ -55,12 +44,7 @@ export default function DashboardPage() {
   }
 
   const handleDelete = async (id: string) => {
-    try {
-      await urlService.deleteURL(id)
-      setUrls(urls.filter(url => url.id !== id))
-    } catch (error) {
-      console.error('Failed to delete URL:', error)
-    }
+    deleteURLMutation.mutate(id)
   }
 
   const filteredUrls = urls.filter(url =>
@@ -72,14 +56,39 @@ export default function DashboardPage() {
   const totalClicks = urls.reduce((sum, url) => sum + (url.click_count || 0), 0)
   const activeUrls = urls.filter(url => !url.expires_at || new Date(url.expires_at) > new Date()).length
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-neon-cyan border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-neon-cyan" />
             <p className="text-neon-cyan font-mono">Loading dashboard...</p>
           </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <CyberCard className="max-w-md">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
+              <h3 className="text-xl font-semibold text-red-400 mb-2">Failed to Load Dashboard</h3>
+              <p className="text-muted-foreground font-mono mb-4">
+                {(error as any)?.response?.data?.message || error?.message || 'An unexpected error occurred'}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="border-red-400 text-red-400 hover:bg-red-400/10"
+              >
+                Retry
+              </Button>
+            </CardContent>
+          </CyberCard>
         </div>
       </MainLayout>
     )
@@ -299,9 +308,14 @@ export default function DashboardPage() {
                               variant="outline"
                               size="icon"
                               onClick={() => handleDelete(url.id)}
+                              disabled={deleteURLMutation.isPending}
                               className="hover:text-red-400 hover:border-red-400"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              {deleteURLMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
                             </Button>
                           </div>
                         </td>
