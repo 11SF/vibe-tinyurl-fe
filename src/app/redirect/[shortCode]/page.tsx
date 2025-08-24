@@ -1,52 +1,52 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { 
-  ExternalLink, 
-  Clock, 
-  Shield, 
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  ExternalLink,
+  Clock,
+  Shield,
   AlertTriangle,
   Loader2,
   ArrowRight,
   Link as LinkIcon,
-  Calendar
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { CyberCard } from '@/components/web3/cyber-card'
-import { NeonButton } from '@/components/web3/neon-button'
-import { formatDate } from '@/lib/utils'
+  Calendar,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CyberCard } from "@/components/web3/cyber-card";
+import { NeonButton } from "@/components/web3/neon-button";
+import { formatDate } from "@/lib/utils";
 
 export default function RedirectPage() {
-  const params = useParams()
-  const shortCode = params.shortCode as string
-  const [countdown, setCountdown] = useState(3)
-  const [showPreview, setShowPreview] = useState(false)
+  const params = useParams();
+  const shortCode = params.shortCode as string;
+  const [countdown, setCountdown] = useState(3);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleRedirect = () => {
-    const redirectUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${shortCode}`
-    window.location.href = redirectUrl
-  }
+    const redirectUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/redirect/${shortCode}`;
+    window.location.href = redirectUrl;
+  };
 
   useEffect(() => {
-    if (!shortCode) return
+    if (!shortCode) return;
 
     // Show redirect page for a moment, then redirect
     const countdownTimer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(countdownTimer)
-          handleRedirect()
-          return 0
+          clearInterval(countdownTimer);
+          handleRedirect();
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(countdownTimer)
-  }, [shortCode])
+    return () => clearInterval(countdownTimer);
+  }, [shortCode]);
 
   if (!shortCode) {
     return (
@@ -54,7 +54,9 @@ export default function RedirectPage() {
         <CyberCard className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-400" />
-            <h1 className="text-xl font-semibold text-red-400 mb-2">Invalid Link</h1>
+            <h1 className="text-xl font-semibold text-red-400 mb-2">
+              Invalid Link
+            </h1>
             <p className="text-muted-foreground font-mono mb-6">
               The short link you're trying to access is not valid.
             </p>
@@ -68,7 +70,7 @@ export default function RedirectPage() {
           </CardContent>
         </CyberCard>
       </div>
-    )
+    );
   }
 
   return (
@@ -87,30 +89,30 @@ export default function RedirectPage() {
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(20)].map((_, i) => {
           // Use deterministic values based on index to avoid hydration mismatch
-          const left = (i * 19 + 29) % 100
-          const top = (i * 37 + 53) % 100
-          const duration = 12 + (i % 6) * 3
-          
+          const left = (i * 19 + 29) % 100;
+          const top = (i * 37 + 53) % 100;
+          const duration = 12 + (i % 6) * 3;
+
           return (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-cyan-400/50 rounded-full"
               animate={{
-                x: [left * 8, (left + 40) % 100 * 8],
-                y: [top * 6, (top + 35) % 100 * 6],
+                x: [left * 8, ((left + 40) % 100) * 8],
+                y: [top * 6, ((top + 35) % 100) * 6],
                 opacity: [0, 1, 0],
               }}
               transition={{
                 duration,
                 repeat: Infinity,
-                repeatType: 'loop',
+                repeatType: "loop",
               }}
               style={{
-                left: left + '%',
-                top: top + '%',
+                left: left + "%",
+                top: top + "%",
               }}
             />
-          )
+          );
         })}
       </div>
 
@@ -168,8 +170,12 @@ export default function RedirectPage() {
               className="p-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 mb-6"
             >
               <div className="flex items-center justify-center space-x-2">
-                <span className="text-sm text-cyan-400 font-mono">Short Code:</span>
-                <code className="text-lg font-bold text-white">{shortCode}</code>
+                <span className="text-sm text-cyan-400 font-mono">
+                  Short Code:
+                </span>
+                <code className="text-lg font-bold text-white">
+                  {shortCode}
+                </code>
               </div>
             </motion.div>
 
@@ -182,7 +188,9 @@ export default function RedirectPage() {
             >
               <Shield className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div className="text-left">
-                <p className="text-sm font-medium text-green-400">Secure Redirect</p>
+                <p className="text-sm font-medium text-green-400">
+                  Secure Redirect
+                </p>
                 <p className="text-xs text-gray-400 font-mono">
                   This link has been verified and is safe to visit
                 </p>
@@ -203,13 +211,15 @@ export default function RedirectPage() {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   style={{
-                    clipPath: `inset(0 ${100 - ((3 - countdown) / 3) * 100}% 0 0)`
+                    clipPath: `inset(0 ${100 - ((3 - countdown) / 3) * 100}% 0 0)`,
                   }}
                 />
-                <span className="text-2xl font-bold text-cyan-400">{countdown}</span>
+                <span className="text-2xl font-bold text-cyan-400">
+                  {countdown}
+                </span>
               </div>
               <p className="text-sm text-gray-400 font-mono">
-                Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}...
+                Redirecting in {countdown} second{countdown !== 1 ? "s" : ""}...
               </p>
             </motion.div>
 
@@ -239,11 +249,14 @@ export default function RedirectPage() {
               className="mt-4 flex items-center justify-center space-x-2 text-sm text-gray-400"
             >
               <Clock className="w-4 h-4" />
-              <span className="font-mono">Click the button to skip waiting</span>
+              <span className="font-mono">
+                Click the button to skip waiting
+              </span>
             </motion.div>
           </CardContent>
         </CyberCard>
       </motion.div>
     </div>
-  )
+  );
 }
+
