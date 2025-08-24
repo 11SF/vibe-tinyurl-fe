@@ -17,7 +17,11 @@ export function useUserURLs(limit: number = 20, offset: number = 0) {
   return useQuery({
     queryKey: URL_QUERY_KEYS.list(limit, offset),
     queryFn: () => urlService.getUserURLs(limit, offset),
-    select: (data) => data.data as URLResponse[],
+    select: (data) => {
+      // Ensure we always return an array, even if backend sends null
+      const urls = data?.data as URLResponse[] | null | undefined
+      return urls || []
+    },
     enabled: true,
   })
 }
@@ -87,7 +91,11 @@ export function useURLAnalytics(id: string, limit: number = 20, offset: number =
   return useQuery({
     queryKey: URL_QUERY_KEYS.analytics(id, limit, offset),
     queryFn: () => urlService.getAnalytics(id, limit, offset),
-    select: (data) => data.data as ClickData[],
+    select: (data) => {
+      // Ensure we always return an array, even if backend sends null
+      const analytics = data?.data as ClickData[] | null | undefined
+      return analytics || []
+    },
     enabled: !!id,
     staleTime: 2 * 60 * 1000, // 2 minutes for analytics
   })

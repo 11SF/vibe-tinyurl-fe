@@ -23,10 +23,11 @@ import { CyberCard } from '@/components/web3/cyber-card'
 import { NeonButton } from '@/components/web3/neon-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClickChart, TopReferrers, HourlyActivity } from '@/components/analytics/click-chart'
+// import { ClickChart, TopReferrers, HourlyActivity } from '@/components/analytics/click-chart'
 import { useUserURLs, useURLAnalytics } from '@/hooks/use-url-api'
 import { formatNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 export default function AnalyticsPage() {
   const [selectedUrl, setSelectedUrl] = useState<string>('')
@@ -109,8 +110,9 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="min-h-screen p-6">
+    <ProtectedRoute>
+      <MainLayout>
+        <div className="min-h-screen p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <motion.div
@@ -246,16 +248,16 @@ export default function AnalyticsPage() {
             </CyberCard>
           ) : analytics.length > 0 ? (
             <>
-              {/* Charts Row */}
-              <div className="space-y-8">
-                <ClickChart data={analytics} title="Click Trends" type="area" />
-              </div>
-
-              {/* Secondary Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <TopReferrers data={analytics} />
-                <HourlyActivity data={analytics} />
-              </div>
+              {/* Charts Row - Temporarily disabled */}
+              <CyberCard>
+                <CardContent className="text-center py-12">
+                  <BarChart3 className="w-16 h-16 text-neon-cyan mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">Charts Coming Soon</h3>
+                  <p className="text-muted-foreground font-mono">
+                    Advanced analytics charts will be available in the next update
+                  </p>
+                </CardContent>
+              </CyberCard>
 
               {/* Device Stats */}
               <CyberCard glowColor="pink">
@@ -357,7 +359,8 @@ export default function AnalyticsPage() {
             </CyberCard>
           )}
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      </MainLayout>
+    </ProtectedRoute>
   )
 }

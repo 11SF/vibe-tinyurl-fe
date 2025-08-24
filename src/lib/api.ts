@@ -11,9 +11,14 @@ export const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('accessToken')
+  console.log('API Request interceptor - Found token:', !!token)
+  console.log('API Request interceptor - Token value:', token ? token.substring(0, 20) + '...' : 'null')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+    console.log('API Request interceptor - Added Authorization header')
+  } else {
+    console.log('API Request interceptor - No token found, skipping Authorization header')
   }
   
   const userId = localStorage.getItem('user_id')
@@ -29,7 +34,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
+      localStorage.removeItem('accessToken')
       localStorage.removeItem('user_id')
       window.location.href = '/login'
     }

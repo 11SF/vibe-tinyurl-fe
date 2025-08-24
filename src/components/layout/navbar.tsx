@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   Zap, 
@@ -10,11 +11,14 @@ import {
   User, 
   Menu, 
   X,
-  LinkIcon
+  LinkIcon,
+  LogOut,
+  LogIn
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NeonButton } from '@/components/web3/neon-button'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/use-auth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -25,6 +29,21 @@ const navigation = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isAuthenticated, user, logout, isLogoutLoading } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
+  const handleLogin = () => {
+    router.push('/login')
+  }
 
   return (
     <nav className="relative z-50 border-b border-white/10 bg-black/20 backdrop-blur-md">
@@ -67,10 +86,30 @@ export function Navbar() {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <NeonButton neonColor="purple" size="sm">
-              <User className="h-4 w-4 mr-2" />
-              Profile
-            </NeonButton>
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-gray-300">{user?.username || user?.email}</span>
+                </div>
+                <NeonButton 
+                  neonColor="red" 
+                  size="sm"
+                  onClick={handleLogout}
+                  disabled={isLogoutLoading}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {isLogoutLoading ? 'Logging out...' : 'Logout'}
+                </NeonButton>
+              </>
+            ) : (
+              <NeonButton neonColor="purple" size="sm" onClick={handleLogin}>
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </NeonButton>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -115,10 +154,30 @@ export function Navbar() {
               </Link>
             ))}
             <div className="pt-4 pb-2 px-3">
-              <NeonButton neonColor="purple" className="w-full justify-center">
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </NeonButton>
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center space-x-3 px-3 py-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-gray-300">{user?.username || user?.email}</span>
+                  </div>
+                  <NeonButton 
+                    neonColor="red" 
+                    className="w-full justify-center"
+                    onClick={handleLogout}
+                    disabled={isLogoutLoading}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {isLogoutLoading ? 'Logging out...' : 'Logout'}
+                  </NeonButton>
+                </>
+              ) : (
+                <NeonButton neonColor="purple" className="w-full justify-center" onClick={handleLogin}>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </NeonButton>
+              )}
             </div>
           </div>
         </motion.div>

@@ -28,6 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useUserURLs, useDeleteURL } from '@/hooks/use-url-api'
 import { formatDate, formatNumber, copyToClipboard } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -48,8 +49,8 @@ export default function DashboardPage() {
   }
 
   const filteredUrls = urls.filter(url =>
-    url.original_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    url.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    url.original_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    url.short_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (url.custom_alias && url.custom_alias.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
@@ -95,8 +96,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="min-h-screen p-6">
+    <ProtectedRoute>
+      <MainLayout>
+        <div className="min-h-screen p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <motion.div
@@ -337,7 +339,8 @@ export default function DashboardPage() {
             </CardContent>
           </CyberCard>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      </MainLayout>
+    </ProtectedRoute>
   )
 }
