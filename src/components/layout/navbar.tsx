@@ -95,7 +95,7 @@ export function Navbar() {
                   <span className="text-gray-300">{user?.username || user?.email}</span>
                 </div>
                 <NeonButton 
-                  neonColor="red" 
+                  neonColor="pink" 
                   size="sm"
                   onClick={handleLogout}
                   disabled={isLogoutLoading}
@@ -163,7 +163,7 @@ export function Navbar() {
                     <span className="text-gray-300">{user?.username || user?.email}</span>
                   </div>
                   <NeonButton 
-                    neonColor="red" 
+                    neonColor="pink" 
                     className="w-full justify-center"
                     onClick={handleLogout}
                     disabled={isLogoutLoading}
