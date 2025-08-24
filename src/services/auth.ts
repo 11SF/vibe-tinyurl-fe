@@ -31,9 +31,9 @@ export interface UserInfo {
 class AuthService {
   async login(data: LoginRequest): Promise<LoginResponse> {
     console.log('AuthService.login called with:', data)
-    console.log('API URL:', `${API_BASE_URL}/api/tinyurl/v1/auth/login`)
+    console.log('API URL:', `${API_BASE_URL}/v1/auth/login`)
     
-    const response = await fetch(`${API_BASE_URL}/api/tinyurl/v1/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/v1/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ class AuthService {
   }
 
   async validateToken(token: string): Promise<UserInfo> {
-    const response = await fetch(`${API_BASE_URL}/api/tinyurl/v1/auth/validate`, {
+    const response = await fetch(`${API_BASE_URL}/v1/auth/validate`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

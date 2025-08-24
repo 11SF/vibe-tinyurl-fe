@@ -134,9 +134,9 @@ Custom animations are defined in the CSS classes:
 
 The frontend integrates with the TinyURL backend API:
 
-- **URL Shortening**: `POST /api/tinyurl/v1/shorten`
-- **Link Management**: `GET/PUT/DELETE /api/tinyurl/v1/urls`
-- **Analytics**: `GET /api/tinyurl/v1/analytics/{id}`
+- **URL Shortening**: `POST /v1/shorten`
+- **Link Management**: `GET/PUT/DELETE /v1/urls`
+- **Analytics**: `GET /v1/analytics/{id}`
 - **Redirects**: `GET /{shortCode}`
 
 API client is configured in `src/lib/api.ts` with automatic token handling.

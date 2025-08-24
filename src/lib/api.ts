@@ -72,27 +72,27 @@ export interface ClickData {
 
 export const urlService = {
   createURL: async (data: CreateURLRequest) => {
-    const response = await api.post('/api/tinyurl/v1/shorten', data)
+    const response = await api.post('/v1/shorten', data)
     return response.data
   },
 
   getUserURLs: async (limit = 20, offset = 0) => {
-    const response = await api.get(`/api/tinyurl/v1/urls?limit=${limit}&offset=${offset}`)
+    const response = await api.get(`/v1/urls?limit=${limit}&offset=${offset}`)
     return response.data
   },
 
   updateURL: async (data: { id: string } & CreateURLRequest) => {
-    const response = await api.put('/api/tinyurl/v1/urls', data)
+    const response = await api.put('/v1/urls', data)
     return response.data
   },
 
   deleteURL: async (id: string) => {
-    const response = await api.delete(`/api/tinyurl/v1/urls/${id}`)
+    const response = await api.delete(`/v1/urls/${id}`)
     return response.data
   },
 
   getAnalytics: async (id: string, limit = 20, offset = 0) => {
-    const response = await api.get(`/api/tinyurl/v1/analytics/${id}?limit=${limit}&offset=${offset}`)
+    const response = await api.get(`/v1/analytics/${id}?limit=${limit}&offset=${offset}`)
     return response.data
   },
 }
