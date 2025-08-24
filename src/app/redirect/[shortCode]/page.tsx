@@ -26,7 +26,7 @@ export default function RedirectPage() {
   const [showPreview, setShowPreview] = useState(false);
 
   const handleRedirect = () => {
-    const redirectUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/redirect/${shortCode}`;
+    const redirectUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/v1/redirect/${shortCode}`;
     window.location.href = redirectUrl;
   };
 
@@ -259,4 +259,3 @@ export default function RedirectPage() {
     </div>
   );
 }
-
